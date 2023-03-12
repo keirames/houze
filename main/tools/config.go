@@ -1,14 +1,14 @@
-package main
+package tools
 
 import "github.com/spf13/viper"
 
-type Config struct {
+type config struct {
 	DBDriver      string `mapstructure:"DB_DRIVER"`
 	DBSource      string `mapstructure:"DB_SOURCE"`
 	ServerAddress string `mapstructure:"SERVER_ADDRESS"`
 }
 
-var config Config
+var Config config
 
 func LoadConfig(path string) error {
 	viper.AddConfigPath(path)
@@ -21,7 +21,7 @@ func LoadConfig(path string) error {
 		return err
 	}
 
-	err = viper.Unmarshal(&config)
+	err = viper.Unmarshal(&Config)
 	if err != nil {
 		return err
 	}

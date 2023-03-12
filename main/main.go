@@ -3,22 +3,27 @@ package main
 import (
 	"fmt"
 
+	"main/database"
+	"main/modules/room/delivery/http"
+	"main/modules/room/repository"
+	useCase "main/modules/room/use_case"
+	"main/tools"
+
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	err := LoadConfig(".")
+	err := tools.LoadConfig(".")
 	if err != nil {
 		fmt.Println(err)
 		panic("Fail to load config")
 	}
 
-	_, err = sqlx.Connect(config.DBDriver, config.DBSource)
+	err = database.Connect()
 	if err != nil {
 		fmt.Println(err)
-		panic("Fail to connect db")
+		panic("Fail to load database")
 	}
 
 	router := gin.Default()
@@ -29,7 +34,11 @@ func main() {
 		c.JSON(200, gin.H{"1": "!"})
 	})
 
-	err = router.Run(config.ServerAddress)
+	roomRepository := repository.NewRoomRepository(database.Conn)
+	roomUseCase := useCase.NewRoomUseCase(roomRepository)
+	http.NewRoomHandler(apiV1, roomUseCase)
+
+	err = router.Run(tools.Config.ServerAddress)
 	if err != nil {
 		panic("Fail to start server")
 	}
